@@ -21,11 +21,7 @@ package soot.toolkits.exceptions;
 
 import java.util.Iterator;
 import soot.*;
-import soot.baf.*;
 import soot.jimple.*;
-import soot.grimp.*;
-import soot.shimple.ShimpleValueSwitch;
-import soot.shimple.PhiExpr;
 
 /**
  * A {@link ThrowAnalysis} which returns the set of runtime exceptions
@@ -78,12 +74,6 @@ public class UnitThrowAnalysis extends AbstractThrowAnalysis {
 	return sw.getResult();
     }
 
-
-    public ThrowableSet mightThrowImplicitly(ThrowInst t) {
-	return implicitThrowExceptions;
-    }
-	
-    
     public ThrowableSet mightThrowImplicitly(ThrowStmt t) {
 	return implicitThrowExceptions;
     }
@@ -117,7 +107,7 @@ public class UnitThrowAnalysis extends AbstractThrowAnalysis {
     private static final LongConstant LONG_CONSTANT_ZERO = LongConstant.v(0);
 
 
-    protected class UnitSwitch implements InstSwitch, StmtSwitch {
+    protected class UnitSwitch implements /*InstSwitch,*/ StmtSwitch {
 
 	private final ThrowableSet.Manager mgr = ThrowableSet.Manager.v();
 
@@ -126,261 +116,6 @@ public class UnitThrowAnalysis extends AbstractThrowAnalysis {
 	
 	ThrowableSet getResult() {
 	    return result;
-	}
-
-	public void caseReturnVoidInst(ReturnVoidInst i) {
-	    result = result.add(mgr.ILLEGAL_MONITOR_STATE_EXCEPTION);
-	}
-	    
-	public void caseReturnInst(ReturnInst i) {
-	    result = result.add(mgr.ILLEGAL_MONITOR_STATE_EXCEPTION);
-	}
-
-	public void caseNopInst(NopInst i) {
-	}
-
-	public void caseGotoInst(GotoInst i) {
-	}
-
-	public void caseJSRInst(JSRInst i) {
-	}
-	
-	public void casePushInst(PushInst i) {
-	}
-
-	public void casePopInst(PopInst i) {
-	}
-
-	public void caseIdentityInst(IdentityInst i) {
-	}
-
-	public void caseStoreInst(StoreInst i) {
-	}
-
-	public void caseLoadInst(LoadInst i) {
-	}
-
-	public void caseArrayWriteInst(ArrayWriteInst i) {
-	    result = result.add(mgr.NULL_POINTER_EXCEPTION);
-	    result = result.add(mgr.ARRAY_INDEX_OUT_OF_BOUNDS_EXCEPTION);
-	    if (i.getOpType() instanceof RefType) {
-		result = result.add(mgr.ARRAY_STORE_EXCEPTION);
-	    }
-	}
-
-	public void caseArrayReadInst(ArrayReadInst i) {
-	    result = result.add(mgr.NULL_POINTER_EXCEPTION);
-	    result = result.add(mgr.ARRAY_INDEX_OUT_OF_BOUNDS_EXCEPTION);
-	}
-
-	public void caseIfNullInst(IfNullInst i) {
-	}
-
-	public void caseIfNonNullInst(IfNonNullInst i) {
-	}
-
-	public void caseIfEqInst(IfEqInst i) {
-	}
-
-	public void caseIfNeInst(IfNeInst i) {
-	}
-
-	public void caseIfGtInst(IfGtInst i) {
-	}
-
-	public void caseIfGeInst(IfGeInst i) {
-	}
-
-	public void caseIfLtInst(IfLtInst i) {
-	}
-
-	public void caseIfLeInst(IfLeInst i) {
-	}
-
-	public void caseIfCmpEqInst(IfCmpEqInst i) {
-	}
-
-	public void caseIfCmpNeInst(IfCmpNeInst i) {
-	}
-
-	public void caseIfCmpGtInst(IfCmpGtInst i) {
-	}
-
-	public void caseIfCmpGeInst(IfCmpGeInst i) {
-	}
-
-	public void caseIfCmpLtInst(IfCmpLtInst i) {
-	}
-
-	public void caseIfCmpLeInst(IfCmpLeInst i) {
-	}
-
-	public void caseStaticGetInst(StaticGetInst i) {
-	    result = result.add(mgr.INITIALIZATION_ERRORS);
-	}
-
-	public void caseStaticPutInst(StaticPutInst i) {
-	    result = result.add(mgr.INITIALIZATION_ERRORS);
-	}
-
-	public void caseFieldGetInst(FieldGetInst i) {
-	    result = result.add(mgr.RESOLVE_FIELD_ERRORS);
-	    result = result.add(mgr.NULL_POINTER_EXCEPTION);
-	}
-
-	public void caseFieldPutInst(FieldPutInst i) {
-	    result = result.add(mgr.RESOLVE_FIELD_ERRORS);
-	    result = result.add(mgr.NULL_POINTER_EXCEPTION);
-	}
-
-	public void caseInstanceCastInst(InstanceCastInst i) {
-	    result = result.add(mgr.RESOLVE_CLASS_ERRORS);
-	    result = result.add(mgr.CLASS_CAST_EXCEPTION);
-	}
-
-	public void caseInstanceOfInst(InstanceOfInst i) {
-	    result = result.add(mgr.RESOLVE_CLASS_ERRORS);
-	}
-
-	public void casePrimitiveCastInst(PrimitiveCastInst i) {
-	}
-
-	public void caseStaticInvokeInst(StaticInvokeInst i) {
-	    result = result.add(mgr.INITIALIZATION_ERRORS);
-	    result = result.add(mightThrow(i.getMethod()));
-	}
-
-	public void caseVirtualInvokeInst(VirtualInvokeInst i) {
-	    result = result.add(mgr.RESOLVE_METHOD_ERRORS);
-	    result = result.add(mgr.NULL_POINTER_EXCEPTION);
-	    result = result.add(mightThrow(i.getMethod()));
-	}
-
-	public void caseInterfaceInvokeInst(InterfaceInvokeInst i) {
-	    result = result.add(mgr.RESOLVE_METHOD_ERRORS);
-	    result = result.add(mgr.NULL_POINTER_EXCEPTION);
-	    result = result.add(mightThrow(i.getMethod()));
-	}
-
-	public void caseSpecialInvokeInst(SpecialInvokeInst i) {
-	    result = result.add(mgr.RESOLVE_METHOD_ERRORS);
-	    result = result.add(mgr.NULL_POINTER_EXCEPTION);
-	    result = result.add(mightThrow(i.getMethod()));
-	}
-
-	public void caseThrowInst(ThrowInst i) {
-	    result = mightThrowImplicitly(i);
-	    result = result.add(mightThrowExplicitly(i));
-	}
-
-	public void caseAddInst(AddInst i) {
-	}
-
-	public void caseAndInst(AndInst i) {
-	}
-
-	public void caseOrInst(OrInst i) {
-	}
-
-	public void caseXorInst(XorInst i) {
-	}
-
-	public void caseArrayLengthInst(ArrayLengthInst i) {
-	    result = result.add(mgr.NULL_POINTER_EXCEPTION);
-	}
-
-	public void caseCmpInst(CmpInst i) {
-	}
-
-	public void caseCmpgInst(CmpgInst i) {
-	}
-
-	public void caseCmplInst(CmplInst i) {
-	}
-
-	public void caseDivInst(DivInst i) {
-	    if (i.getOpType() instanceof IntegerType ||
-		i.getOpType() == LongType.v()) {
-		result = result.add(mgr.ARITHMETIC_EXCEPTION);
-	    }
-	}
-
-	public void caseIncInst(IncInst i) {
-	}
-
-	public void caseMulInst(MulInst i) {
-	}
-
-	public void caseRemInst(RemInst i) {
-	    if (i.getOpType() instanceof IntegerType ||
-		i.getOpType() == LongType.v()) {
-		result = result.add(mgr.ARITHMETIC_EXCEPTION);
-	    }
-	}
-
-	public void caseSubInst(SubInst i) {
-	}
-
-	public void caseShlInst(ShlInst i) {
-	}
-
-	public void caseShrInst(ShrInst i) {
-	}
-
-	public void caseUshrInst(UshrInst i) {
-	}
-
-	public void caseNewInst(NewInst i) {
-	    result = result.add(mgr.INITIALIZATION_ERRORS);
-	}
-	    
-	public void caseNegInst(NegInst i) {
-	}
-
-	public void caseSwapInst(SwapInst i) {
-	}
-   
-	public void caseDup1Inst(Dup1Inst i) {
-	}
-
-	public void caseDup2Inst(Dup2Inst i) {
-	}
-
-	public void caseDup1_x1Inst(Dup1_x1Inst i) {
-	}
-    
-	public void caseDup1_x2Inst(Dup1_x2Inst i) {
-	}
-
-	public void caseDup2_x1Inst(Dup2_x1Inst i) {
-	}
-
-	public void caseDup2_x2Inst(Dup2_x2Inst i) {
-	}
-
-	public void caseNewArrayInst(NewArrayInst i) {
-	    result = result.add(mgr.RESOLVE_CLASS_ERRORS); // Could be omitted for primitive arrays.
-	    result = result.add(mgr.NEGATIVE_ARRAY_SIZE_EXCEPTION);
-	}
-
-	public void caseNewMultiArrayInst(NewMultiArrayInst i) {
-	    result = result.add(mgr.RESOLVE_CLASS_ERRORS);
-	    result = result.add(mgr.NEGATIVE_ARRAY_SIZE_EXCEPTION);
-	}
-
-	public void caseLookupSwitchInst(LookupSwitchInst i) {
-	}
-
-	public void caseTableSwitchInst(TableSwitchInst i) {
-	}
-
-	public void caseEnterMonitorInst(EnterMonitorInst i) {
-	    result = result.add(mgr.NULL_POINTER_EXCEPTION);
-	}
-
-	public void caseExitMonitorInst(ExitMonitorInst i) {
-	    result = result.add(mgr.ILLEGAL_MONITOR_STATE_EXCEPTION);
-	    result = result.add(mgr.NULL_POINTER_EXCEPTION);
 	}
 
 	public void caseAssignStmt(AssignStmt s) {
@@ -458,7 +193,7 @@ public class UnitThrowAnalysis extends AbstractThrowAnalysis {
     }
 
 
-    protected class ValueSwitch implements GrimpValueSwitch, ShimpleValueSwitch {
+    protected class ValueSwitch implements JimpleValueSwitch {
 
 	private final ThrowableSet.Manager mgr = 
 	    ThrowableSet.Manager.v();
@@ -696,13 +431,6 @@ public class UnitThrowAnalysis extends AbstractThrowAnalysis {
 
 	public void caseNewInvokeExpr(NewInvokeExpr e) {
 	    caseStaticInvokeExpr(e);
-	}
-
-	public void casePhiExpr(PhiExpr e) {
-	    for (Iterator i = e.getUseBoxes().iterator(); i.hasNext(); ) {
-		ValueBox box = (ValueBox) i.next();
-		result = result.add(mightThrow(box.getValue()));
-	    }
 	}
 
 	public void defaultCase(Object obj) {

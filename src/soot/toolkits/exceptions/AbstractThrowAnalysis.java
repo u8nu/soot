@@ -26,9 +26,8 @@ import soot.Unit;
 import soot.UnknownType;
 import soot.NullType;
 import soot.Value;
-import soot.baf.ThrowInst;
-import soot.grimp.NewInvokeExpr;
 import soot.jimple.ThrowStmt;
+import soot.jimple.NewInvokeExpr;
 
 /**
  * Abstract class implementing parts of the {@link ThrowAnalysis}
@@ -43,13 +42,6 @@ import soot.jimple.ThrowStmt;
 public abstract class AbstractThrowAnalysis implements ThrowAnalysis {
 
     abstract public ThrowableSet mightThrow(Unit u);
-
-
-    public ThrowableSet mightThrowExplicitly(ThrowInst t) {
-	// Deducing the type at the top of the Baf stack is beyond me, so...
-	return ThrowableSet.Manager.v().ALL_THROWABLES;
-    }
-
 
     public ThrowableSet mightThrowExplicitly(ThrowStmt t) {
 	Value thrownExpression = t.getOp();
@@ -76,10 +68,6 @@ public abstract class AbstractThrowAnalysis implements ThrowAnalysis {
 	}
     }
 
-
-    abstract public ThrowableSet mightThrowImplicitly(ThrowInst t);
-	
-    
     abstract public ThrowableSet mightThrowImplicitly(ThrowStmt t);
 }
 

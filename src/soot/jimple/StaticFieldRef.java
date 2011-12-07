@@ -32,11 +32,10 @@ package soot.jimple;
 
 import soot.tagkit.*;
 import soot.*;
-import soot.baf.*;
 import soot.util.*;
 import java.util.*;
 
-public class StaticFieldRef implements FieldRef, ConvertToBaf
+public class StaticFieldRef implements FieldRef
 {
 
 
@@ -103,14 +102,4 @@ public class StaticFieldRef implements FieldRef, ConvertToBaf
         return getField().equivHashCode();
     }
 
-    public void convertToBaf(JimpleToBafContext context, List<Unit> out)
-    {
-        Unit u = Baf.v().newStaticGetInst(fieldRef);
-        out.add(u);
-
-        Iterator it = context.getCurrentUnit().getTags().iterator();
-        while(it.hasNext()) {
-            u.addTag((Tag) it.next());
-        }
-    }
 }

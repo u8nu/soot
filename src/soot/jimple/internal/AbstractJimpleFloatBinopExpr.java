@@ -36,7 +36,7 @@ import soot.jimple.*;
 import java.util.*;
 
 abstract public class AbstractJimpleFloatBinopExpr
-    extends AbstractFloatBinopExpr implements ConvertToBaf
+    extends AbstractFloatBinopExpr
 {
     AbstractJimpleFloatBinopExpr(Value op1, Value op2)
     {
@@ -49,18 +49,4 @@ abstract public class AbstractJimpleFloatBinopExpr
         this.op1Box = op1Box;
         this.op2Box = op2Box;
     }
-
-    public void convertToBaf(JimpleToBafContext context, List<Unit> out)
-    {
-        ((ConvertToBaf) this.getOp1()).convertToBaf(context, out);
-        ((ConvertToBaf) this.getOp2()).convertToBaf(context, out);
-        Unit u = (Unit)makeBafInst(this.getOp1().getType());
-        out.add(u);
-	Iterator it = context.getCurrentUnit().getTags().iterator();
-	while(it.hasNext()) {
-	    u.addTag((Tag) it.next());
-	}
-    }
-
-    abstract Object makeBafInst(Type opType);
 }

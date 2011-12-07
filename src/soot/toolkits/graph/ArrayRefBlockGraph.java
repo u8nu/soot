@@ -29,7 +29,6 @@ package soot.toolkits.graph;
 import java.util.*;
 import soot.*;
 import soot.jimple.Stmt;
-import soot.baf.Inst;
 
 
 /**
@@ -71,8 +70,6 @@ public class ArrayRefBlockGraph extends BlockGraph
     public  ArrayRefBlockGraph(BriefUnitGraph unitGraph)
     {
         super(unitGraph);
-
-	soot.util.PhaseDumper.v().dumpGraph(this, mBody);
     }
 
     
@@ -111,8 +108,7 @@ public class ArrayRefBlockGraph extends BlockGraph
 
 	for (Iterator it = body.getUnits().iterator(); it.hasNext(); ) {
 	    Unit unit = (Unit) it.next();
-	    if (((unit instanceof Stmt) && ((Stmt) unit).containsArrayRef()) ||
-		((unit instanceof Inst) && ((Inst) unit).containsArrayRef())) {
+	    if (((unit instanceof Stmt) && ((Stmt) unit).containsArrayRef())) {
 		leaders.add(unit);
 	    }
 	}

@@ -49,8 +49,6 @@ import soot.jimple.ParameterRef;
 import soot.jimple.ThisRef;
 import soot.options.Options;
 import soot.tagkit.AbstractHost;
-import soot.tagkit.CodeAttribute;
-import soot.tagkit.Tag;
 import soot.toolkits.exceptions.PedanticThrowAnalysis;
 import soot.toolkits.graph.ExceptionalUnitGraph;
 import soot.toolkits.graph.UnitGraph;
@@ -435,15 +433,6 @@ public abstract class Body extends AbstractHost implements Serializable
             }
         }
 
-        {
-            Iterator<Tag> it = getTags().iterator();
-            while(it.hasNext()) {
-                Tag t = it.next();
-                if( t instanceof CodeAttribute)
-                    unitBoxList.addAll(((CodeAttribute) t).getUnitBoxes());
-            }
-        }
-
         return unitBoxList;
     }
 
@@ -490,15 +479,6 @@ public abstract class Body extends AbstractHost implements Serializable
             while(it.hasNext()) {
                 Trap item = it.next();
                 unitBoxList.addAll(item.getUnitBoxes());
-            }
-        }
-
-        {
-            Iterator<Tag> it = getTags().iterator();
-            while(it.hasNext()) {
-                Tag t = it.next();
-                if( t instanceof CodeAttribute)
-                    unitBoxList.addAll(((CodeAttribute) t).getUnitBoxes());
             }
         }
 

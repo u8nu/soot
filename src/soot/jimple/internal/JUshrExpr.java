@@ -32,7 +32,6 @@ package soot.jimple.internal;
 
 import soot.*;
 import soot.jimple.*;
-import soot.baf.*;
 import soot.util.*;
 
 public class JUshrExpr extends AbstractJimpleIntLongBinopExpr implements UshrExpr
@@ -41,9 +40,6 @@ public class JUshrExpr extends AbstractJimpleIntLongBinopExpr implements UshrExp
     public final String getSymbol() { return " >>> "; }
     public void apply(Switch sw) { ((ExprSwitch) sw).caseUshrExpr(this); }
 
-    Object makeBafInst(Type opType) { return Baf.v().newUshrInst(this.getOp1().getType()); }
-
-    
     public Object clone() 
     {
         return new JUshrExpr(Jimple.cloneIfNecessary(getOp1()), Jimple.cloneIfNecessary(getOp2()));

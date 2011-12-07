@@ -29,13 +29,11 @@ package soot.jimple.internal;
 
 import soot.*;
 import soot.tagkit.*;
-import soot.baf.*;
 import soot.jimple.*;
 import soot.util.*;
 import java.util.*;
-import soot.grimp.PrecedenceTest;
 
-public abstract class AbstractInstanceFieldRef implements InstanceFieldRef, ConvertToBaf
+public abstract class AbstractInstanceFieldRef implements InstanceFieldRef
 {
     protected SootFieldRef fieldRef;
     ValueBox baseBox;
@@ -127,17 +125,4 @@ public abstract class AbstractInstanceFieldRef implements InstanceFieldRef, Conv
         return getField().equivHashCode() * 101 + baseBox.getValue().equivHashCode() + 17;
     }
 
-    public void convertToBaf(JimpleToBafContext context, List<Unit> out)
-    {
-        ((ConvertToBaf)getBase()).convertToBaf(context, out);
-	Unit u;
-        out.add(u = Baf.v().newFieldGetInst(fieldRef));
-
-	
-	Unit currentUnit = context.getCurrentUnit();
-	Iterator it = currentUnit.getTags().iterator();	
-	while(it.hasNext()) {
-	    u.addTag((Tag) it.next());
-	}
-    }
 }

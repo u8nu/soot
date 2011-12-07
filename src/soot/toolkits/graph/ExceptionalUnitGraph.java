@@ -38,11 +38,6 @@ import java.util.Map.Entry;
 import soot.options.Options;
 import soot.toolkits.exceptions.ThrowAnalysis;
 import soot.toolkits.exceptions.ThrowableSet;
-import soot.baf.Inst;
-import soot.baf.NewInst;
-import soot.baf.StaticPutInst;
-import soot.baf.StaticGetInst;
-import soot.baf.ThrowInst;
 import soot.jimple.Stmt;
 import soot.jimple.ThrowStmt;
 import soot.jimple.StaticFieldRef;
@@ -285,8 +280,6 @@ public class ExceptionalUnitGraph extends UnitGraph implements ExceptionalGraph<
 
         if(Options.v().time())
             Timers.v().graphTimer.end();        
-
-	soot.util.PhaseDumper.v().dumpGraph(this);
     }
 
 
@@ -512,11 +505,7 @@ public class ExceptionalUnitGraph extends UnitGraph implements ExceptionalGraph<
 					  mightHaveSideEffects(thrower));
 	    ThrowableSet predThrowables = null;
 	    ThrowableSet selfThrowables = null;
-	    if (thrower instanceof ThrowInst) {
-		ThrowInst throwInst = (ThrowInst) thrower;
-		predThrowables = throwAnalysis.mightThrowImplicitly(throwInst);
-		selfThrowables = throwAnalysis.mightThrowExplicitly(throwInst);
-	    } else if (thrower instanceof ThrowStmt) {
+	    if (thrower instanceof ThrowStmt) {
 		ThrowStmt throwStmt = (ThrowStmt) thrower;
 		predThrowables = throwAnalysis.mightThrowImplicitly(throwStmt);
 		selfThrowables = throwAnalysis.mightThrowExplicitly(throwStmt);
@@ -665,13 +654,6 @@ public class ExceptionalUnitGraph extends UnitGraph implements ExceptionalGraph<
      * @return whether or not <code>u</code> has the potential for side effects.
      */
     static boolean mightHaveSideEffects(Unit u) {
-	if (u instanceof Inst) {
-	    Inst i = (Inst) u;
-	    return (i.containsInvokeExpr() || 
-		    (i instanceof StaticPutInst) || 
-		    (i instanceof StaticGetInst) || 
-		    (i instanceof NewInst));
-	} else if (u instanceof Stmt) {
 	    for (Iterator<ValueBox> it = u.getUseBoxes().iterator(); it.hasNext(); ) {
 		Value v = it.next().getValue();
 		if ((v instanceof StaticFieldRef) || 
@@ -680,7 +662,6 @@ public class ExceptionalUnitGraph extends UnitGraph implements ExceptionalGraph<
 		    return true;
 		}
 	    }
-	}
 	return false;
     }
 
@@ -753,12 +734,9 @@ public class ExceptionalUnitGraph extends UnitGraph implements ExceptionalGraph<
 	for (Iterator<Unit> it = unitChain.iterator(); it.hasNext(); ) {
 	    Unit u = (Unit) it.next();
 	    if (u instanceof soot.jimple.ReturnStmt ||
-		u instanceof soot.jimple.ReturnVoidStmt ||
-		u instanceof soot.baf.ReturnInst ||
-		u instanceof soot.baf.ReturnVoidInst) {
+		u instanceof soot.jimple.ReturnVoidStmt) {
 		tailList.add(u);
-	    } else if (u instanceof soot.jimple.ThrowStmt ||
-		       u instanceof soot.baf.ThrowInst) {
+	    } else if (u instanceof soot.jimple.ThrowStmt) {
 		Collection<ExceptionDest> dests = getExceptionDests(u);
 		int escapeMethodCount = 0;
 		for (Iterator<ExceptionDest> destIt = dests.iterator(); destIt.hasNext(); ) {

@@ -170,46 +170,15 @@ public class ClassFile {
 
     public boolean loadClassFile(InputStream is) 
     {
-      InputStream f = null;
-      InputStream classFileStream;
-      DataInputStream d;
-      boolean b;
-
-      classFileStream = is;
-     
-      byte[]  data;
-      
-      
-      Timers.v().readTimer.start();
-      
-      try 
-      {
-        data = new byte[classFileStream.available()];
-        classFileStream.read(data);
-        f = new ByteArrayInputStream(data);
-         
-      } catch(IOException e)
-      {
-      }
-      
-      Timers.v().readTimer.end();
-      
-      d = new DataInputStream(f);
-      b = readClass(d);
-      
+      DataInputStream d = null;
       try {
-        classFileStream.close();
-        d.close(); 
-        f.close();
-      } catch(IOException e) {
-         G.v().out.println("IOException with " + fn + ": " + e.getMessage());
-         return false;
+          d = new DataInputStream(new BufferedInputStream(is, 8192));
+          return readClass(d);
+      } finally {
+          try {
+              d.close();
+          } catch (Throwable t) {}
       }
-      
-      if (!b) return false;
-      //parse();        // parse all methods & builds CFGs
-      //G.v().out.println("-- Read " + cf + " --");
-      return true;
    }
 
 

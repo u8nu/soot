@@ -32,7 +32,6 @@ package soot;
 import soot.tagkit.*;
 import soot.util.*;
 import java.util.*;
-import soot.dava.toolkits.base.misc.*;
 import soot.options.*;
 
 /*
@@ -60,13 +59,13 @@ public class SootClass extends AbstractHost implements Numberable
     protected String name, shortName, fixedShortName, packageName, fixedPackageName;
     protected int modifiers;
     protected Chain<SootField> fields = new HashChain<SootField>();
-    protected SmallNumberedMap subSigToMethods = new SmallNumberedMap( Scene.v().getSubSigNumberer() );
+    protected SmallNumberedMap subSigToMethods = null;
     // methodList is just for keeping the methods in a consistent order. It
     // needs to be kept consistent with subSigToMethods.
     protected List<SootMethod> methodList = new ArrayList<SootMethod>();
     protected Chain<SootClass> interfaces = new HashChain<SootClass>();
 
-    protected boolean isInScene;
+    protected Scene scene;
     protected SootClass superClass;
     protected SootClass outerClass;
 
@@ -113,15 +112,15 @@ public class SootClass extends AbstractHost implements Numberable
         }
     }
     public void checkLevel( int level ) {
-        if( !Scene.v().doneResolving() ) return;
         if( resolvingLevel < level ) {
-        	String hint = "\nIf you are extending Soot, try to add the following call before calling soot.Main.main(..):\n" +
-        			      "Scene.v().addBasicClass("+getName()+","+levelToString(level)+");\n" +
-        			      "Otherwise, try whole-program mode (-w).";
-            throw new RuntimeException(
-                "This operation requires resolving level "+
-                levelToString(level)+" but "+name+
-                " is at resolving level "+levelToString(resolvingLevel) + hint);
+            SootResolver.v().resolveClass(this, level);
+//        	String hint = "\nIf you are extending Soot, try to add the following call before calling soot.Main.main(..):\n" +
+//        			      "scene().addBasicClass("+getName()+","+levelToString(level)+");\n" +
+//        			      "Otherwise, try whole-program mode (-w).";
+//            throw new RuntimeException(
+//                "This operation requires resolving level "+
+//                levelToString(level)+" but "+name+
+//                " is at resolving level "+levelToString(resolvingLevel) + hint);
         }
     }
 
@@ -132,15 +131,20 @@ public class SootClass extends AbstractHost implements Numberable
 
     public boolean isInScene()
     {
-        return isInScene;
+        return scene != null;
     }
 
-    /** Tells this class if it is being managed by a Scene. */
-    public void setInScene(boolean isInScene)
-    {
-        this.isInScene = isInScene;
+    public Scene scene() {
+        if (scene == null) {
+            throw new RuntimeException("Not in any scene");
+        }
+        return scene;
     }
-
+    
+    public void setScene(Scene scene) {
+        this.scene = scene;
+    }
+    
     /**
         Returns the number of fields in this class.
     */
@@ -288,7 +292,7 @@ public class SootClass extends AbstractHost implements Numberable
     public SootMethod getMethod(NumberedString subsignature)
     {
         checkLevel(SIGNATURES);
-        SootMethod ret = (SootMethod) subSigToMethods.get( subsignature );
+        SootMethod ret = (SootMethod) (subSigToMethods == null ? null : subSigToMethods.get( subsignature ));
         if(ret == null)
             throw new RuntimeException("No method " + subsignature + " in class " + getName());
         else
@@ -302,7 +306,7 @@ public class SootClass extends AbstractHost implements Numberable
     public boolean declaresMethod(NumberedString subsignature)
     {
         checkLevel(SIGNATURES);
-        SootMethod ret = (SootMethod) subSigToMethods.get( subsignature );
+        SootMethod ret = (SootMethod) (subSigToMethods == null ? null : subSigToMethods.get( subsignature ));
         return ret != null;
     }
     
@@ -314,7 +318,7 @@ public class SootClass extends AbstractHost implements Numberable
     public SootMethod getMethod(String subsignature)
     {
         checkLevel(SIGNATURES);
-        return getMethod( Scene.v().getSubSigNumberer().findOrAdd( subsignature ) );
+        return getMethod( scene().getSubSigNumberer().findOrAdd( subsignature ) );
     }
 
     /**
@@ -324,7 +328,7 @@ public class SootClass extends AbstractHost implements Numberable
     public boolean declaresMethod(String subsignature)
     {
         checkLevel(SIGNATURES);
-        return declaresMethod( Scene.v().getSubSigNumberer().findOrAdd( subsignature ) );
+        return declaresMethod( scene().getSubSigNumberer().findOrAdd( subsignature ) );
     }
     
     
@@ -377,7 +381,7 @@ public class SootClass extends AbstractHost implements Numberable
     public int getMethodCount()
     {
         checkLevel(SIGNATURES);
-        return subSigToMethods.nonNullSize();
+        return subSigToMethods == null ? 0 : subSigToMethods.nonNullSize();
     }
 
     /**
@@ -576,6 +580,9 @@ public class SootClass extends AbstractHost implements Numberable
             throw new RuntimeException("duplicate signature for: " + m.getName());
         */
         
+        if (subSigToMethods == null) {
+            subSigToMethods = new SmallNumberedMap( scene().getSubSigNumberer() );
+        }
         if(subSigToMethods.get(m.getNumberedSubSignature()) != null ) {
             throw new RuntimeException(
                     "Attempting to add method "+m.getSubSignature()+" to class "+this+", but the class already has a method with that signature.");
@@ -597,6 +604,9 @@ public class SootClass extends AbstractHost implements Numberable
         if(!m.isDeclared() || m.getDeclaringClass() != this)
             throw new RuntimeException("incorrect declarer for remove: "+m.getName());
 
+        if (subSigToMethods == null) {
+            subSigToMethods = new SmallNumberedMap( scene().getSubSigNumberer() );
+        }
         if(subSigToMethods.get(m.getNumberedSubSignature()) == null) {
             throw new RuntimeException(
                     "Attempt to remove method "+m.getSubSignature()+" which is not in class "+this);
@@ -760,28 +770,11 @@ public class SootClass extends AbstractHost implements Numberable
 
     public String getJavaStyleName()
     {
-	if (PackageNamer.v().has_FixedNames()) {
-	    if (fixedShortName == null)
-		fixedShortName = PackageNamer.v().get_FixedClassName( name);
-
-	    if (PackageNamer.v().use_ShortName( getJavaPackageName(), fixedShortName) == false)
-		return getJavaPackageName() + "." + fixedShortName;
-
-	    return fixedShortName;
-	}
-
 	return shortName;
     }
 
     public String getShortJavaStyleName()
     {
-	if (PackageNamer.v().has_FixedNames()) {
-	    if (fixedShortName == null)
-		fixedShortName = PackageNamer.v().get_FixedClassName( name);
-
-	    return fixedShortName;
-	}
-
 	return shortName;
     }
 
@@ -800,13 +793,6 @@ public class SootClass extends AbstractHost implements Numberable
 
     public String getJavaPackageName()
     {
-	if (PackageNamer.v().has_FixedNames()) {
-	    if (fixedPackageName == null)
-		fixedPackageName = PackageNamer.v().get_FixedPackageName( packageName);
-	    
-	    return fixedPackageName;
-	}
-
 	return packageName;
     }
 
@@ -847,25 +833,6 @@ public class SootClass extends AbstractHost implements Numberable
     public boolean isPublic()
     {
         return Modifier.isPublic(this.getModifiers());
-    }
-
-    /** Returns true if some method in this class has an active Baf body. */
-    public boolean containsBafBody()
-    {
-        Iterator<SootMethod> methodIt = methodIterator();
-        
-        while(methodIt.hasNext())
-        {
-            SootMethod m = methodIt.next();
-            
-            if(m.hasActiveBody() && 
-                m.getActiveBody() instanceof soot.baf.BafBody)
-            {
-                return true;
-            }
-        }
-        
-        return false;
     }
     
     private RefType refType;
@@ -935,16 +902,16 @@ public class SootClass extends AbstractHost implements Numberable
      * @see Scene#getApplicationClasses() */
     public boolean isApplicationClass()
     {
-        return Scene.v().getApplicationClasses().contains(this);
+        return scene().getApplicationClasses().contains(this);
     }
 
     /** Makes this class an application class. */
     public void setApplicationClass()
     {
-        Chain<SootClass> c = Scene.v().getContainingChain(this);
+        Chain<SootClass> c = scene().getContainingChain(this);
         if (c != null)
             c.remove(this);
-        Scene.v().getApplicationClasses().add(this);
+        scene().getApplicationClasses().add(this);
 
         isPhantom = false;
     }
@@ -954,16 +921,16 @@ public class SootClass extends AbstractHost implements Numberable
      * @see Scene#getLibraryClasses() */
     public boolean isLibraryClass()
     {
-        return Scene.v().getLibraryClasses().contains(this);
+        return scene().getLibraryClasses().contains(this);
     }
 
     /** Makes this class a library class. */
     public void setLibraryClass()
     {
-        Chain<SootClass> c = Scene.v().getContainingChain(this);
+        Chain<SootClass> c = scene().getContainingChain(this);
         if (c != null)
             c.remove(this);
-        Scene.v().getLibraryClasses().add(this);
+        scene().getLibraryClasses().add(this);
 
         isPhantom = false;
     }
@@ -973,16 +940,16 @@ public class SootClass extends AbstractHost implements Numberable
      * @see Scene#getPhantomClasses() */
     public boolean isPhantomClass()
     {
-        return Scene.v().getPhantomClasses().contains(this);
+        return scene().getPhantomClasses().contains(this);
     }
 
     /** Makes this class a phantom class. */
     public void setPhantomClass()
     {
-        Chain<SootClass> c = Scene.v().getContainingChain(this);
+        Chain<SootClass> c = scene().getContainingChain(this);
         if (c != null)
             c.remove(this);
-        Scene.v().getPhantomClasses().add(this);
+        scene().getPhantomClasses().add(this);
         isPhantom = true;
     }
     

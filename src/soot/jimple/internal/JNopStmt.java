@@ -30,8 +30,6 @@
 
 package soot.jimple.internal;
 
-import soot.baf.*;
-
 import soot.tagkit.*;
 import soot.jimple.*;
 import soot.*;
@@ -65,19 +63,6 @@ public class JNopStmt extends AbstractStmt implements NopStmt
         ((StmtSwitch) sw).caseNopStmt(this);
     }    
     
-    public void convertToBaf(JimpleToBafContext context, List<Unit> out)
-    {
-	Unit u;
-        out.add(u = Baf.v().newNopInst());
-
-	Unit currentUnit = this;
-
-	Iterator it = currentUnit.getTags().iterator();	
-	while(it.hasNext()) {
-	    u.addTag((Tag) it.next());
-	}
-    }
-
 
     public boolean fallsThrough(){return true;}        
     public boolean branches(){return false;}

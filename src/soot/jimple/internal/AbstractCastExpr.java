@@ -29,12 +29,10 @@ package soot.jimple.internal;
 import soot.tagkit.*;
 import soot.*;
 import soot.jimple.*;
-import soot.baf.*;
 import soot.util.*;
 import java.util.*;
-import soot.grimp.PrecedenceTest;
 
-abstract public class AbstractCastExpr implements CastExpr, ConvertToBaf
+abstract public class AbstractCastExpr implements CastExpr
 {
     ValueBox opBox;
     Type type;
@@ -127,26 +125,4 @@ abstract public class AbstractCastExpr implements CastExpr, ConvertToBaf
         ((ExprSwitch) sw).caseCastExpr(this);
     }
 
-    public void convertToBaf(JimpleToBafContext context, List<Unit> out)
-    {
-        final Type toType = getCastType();
-        final Type fromType = getOp().getType();
-
-        ((ConvertToBaf)getOp()).convertToBaf(context, out);
-
-	Unit u;
-        if (toType instanceof ArrayType || toType instanceof RefType)
-            u = Baf.v().newInstanceCastInst(toType);
-        else
-            u = Baf.v().newPrimitiveCastInst(fromType, toType);
-
-	out.add(u);
-
-	Unit currentUnit = context.getCurrentUnit();
-
-	Iterator it = currentUnit.getTags().iterator();	
-	while(it.hasNext()) {
-	    u.addTag((Tag) it.next());
-	}
-    }
 }

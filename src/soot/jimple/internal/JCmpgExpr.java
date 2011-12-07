@@ -32,7 +32,6 @@ package soot.jimple.internal;
 
 import soot.*;
 import soot.jimple.*;
-import soot.baf.*;
 import soot.util.*;
 
 public class JCmpgExpr extends AbstractJimpleIntBinopExpr implements CmpgExpr
@@ -40,7 +39,6 @@ public class JCmpgExpr extends AbstractJimpleIntBinopExpr implements CmpgExpr
     public JCmpgExpr(Value op1, Value op2) { super(op1, op2); }
     public final String getSymbol() { return " " + Jimple.CMPG + " " ; }
     public void apply(Switch sw) { ((ExprSwitch) sw).caseCmpgExpr(this); }
-    Object makeBafInst(Type opType) { return Baf.v().newCmpgInst(this.getOp1().getType()); }
     
     public Object clone() 
     {

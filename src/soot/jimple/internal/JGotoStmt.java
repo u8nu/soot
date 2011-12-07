@@ -33,7 +33,6 @@ package soot.jimple.internal;
 import soot.tagkit.*;
 import soot.*;
 import soot.jimple.*;
-import soot.baf.*;
 import soot.util.*;
 import java.util.*;
 
@@ -101,17 +100,6 @@ public class JGotoStmt extends AbstractStmt implements GotoStmt
     {
         ((StmtSwitch) sw).caseGotoStmt(this);
     }    
-    
-    public void convertToBaf(JimpleToBafContext context, List<Unit> out)
-    {
-	Unit u;
-        out.add(u = Baf.v().newGotoInst(Baf.v().newPlaceholderInst(getTarget())));
-
-	Iterator it = getTags().iterator();
-	while(it.hasNext()) {
-	    u.addTag((Tag) it.next());
-	}
-    }
     
     public boolean fallsThrough(){return false;}        
     public boolean branches() { return true;}

@@ -265,18 +265,19 @@ public class Scene  //extends AbstractHost
         if(containsClass(c.getName()))
             throw new RuntimeException("duplicate class: "+c.getName());
 
+        c.setScene(this);
+        
         classes.add(c);
         c.setLibraryClass();
 
         nameToClass.put(c.getName(), c.getType());
         c.getType().setSootClass(c);
-        c.setInScene(true);
         modifyHierarchy();
     }
 
     public void removeClass(SootClass c)
     {
-        if(!c.isInScene())
+        if(c.scene() != this)
             throw new RuntimeException();
 
         classes.remove(c);
@@ -290,7 +291,7 @@ public class Scene  //extends AbstractHost
         }
         
         c.getType().setSootClass(null);
-        c.setInScene(false);
+        c.setScene(null);
         modifyHierarchy();
     }
 
@@ -477,8 +478,8 @@ public class Scene  //extends AbstractHost
 			return toReturn;
 		} else if (allowsPhantomRefs()) {
 			SootClass c = new SootClass(className);
+            addClass(c);
 			c.setPhantom(true);
-			addClass(c);
 			return c;
 		} else {
 			throw new RuntimeException(System.getProperty("line.separator")
@@ -935,8 +936,6 @@ public class Scene  //extends AbstractHost
 	addBasicClass("java.lang.Cloneable");
 
 	addBasicClass("java.io.Serializable");	
-
-	addBasicClass("java.lang.ref.Finalizer");
     }
 
     public void addBasicClass(String name) {
@@ -952,50 +951,12 @@ public class Scene  //extends AbstractHost
      *  loadNecessaryClasses, though it will only waste time.
      */
     public void loadBasicClasses() {
-    	addReflectionTraceClasses();
-    	
 		for(int i=SootClass.BODIES;i>=SootClass.HIERARCHY;i--) {
 		    for(String name: basicclasses[i]) {
-		    	tryLoadClass(name,i);
+		    	tryLoadClass(name, SootClass.DANGLING);
 		    }
 		}
     }
-
-    private void addReflectionTraceClasses() {
-    	CGOptions options = new CGOptions( PhaseOptions.v().getPhaseOptions("cg") );
-    	String log = options.reflection_log();
-    	
-    	Set<String> classNames = new HashSet<String>();
-    	if(log!=null && log.length()>0) {
-			BufferedReader reader;
-			String line="";
-			try {
-				reader = new BufferedReader(new InputStreamReader(new FileInputStream(log)));
-				while((line=reader.readLine())!=null) {
-					if(line.length()==0) continue;
-					String[] portions = line.split(";",-1);
-					String kind = portions[0];
-					String target = portions[1];
-					String source = portions[2];
-					String sourceClassName = source.substring(0,source.lastIndexOf("."));
-					classNames.add(sourceClassName);
-					if(kind.equals("Class.forName")) {
-						classNames.add(target);
-					} else if(kind.equals("Class.newInstance")) {
-						classNames.add(target);
-					} else if(kind.equals("Method.invoke") || kind.equals("Constructor.newInstance")) {
-						classNames.add(signatureToClass(target));
-					} else throw new RuntimeException("Unknown entry kind: "+kind);
-				}
-			} catch (Exception e) {
-				throw new RuntimeException("Line: '"+line+"'", e);
-			}
-    	}
-    	
-    	for (String c : classNames) {
-    		addBasicClass(c, SootClass.BODIES);
-		}
-	}
 
 	private List<SootClass> dynamicClasses;
     public Collection<SootClass> dynamicClasses() {
@@ -1035,7 +996,6 @@ public class Scene  //extends AbstractHost
         }
 
         prepareClasses();
-        setDoneResolving();
     }
 
     public void loadDynamicClasses() {
@@ -1123,10 +1083,10 @@ public class Scene  //extends AbstractHost
                     if ((s.getPackageName()+".").startsWith(pkg))
                         s.setApplicationClass();
                 }
-                if(s.isApplicationClass()) {
-                    // make sure we have the support
-                    loadClassAndSupport(s.getName());
-                }
+//                if(s.isApplicationClass()) {
+//                    // make sure we have the support
+//                    loadClassAndSupport(s.getName());
+//                }
             }
         }
     }
@@ -1180,10 +1140,6 @@ public class Scene  //extends AbstractHost
         }
         return ret;
     }
-    private boolean doneResolving = false;
-	private boolean incrementalBuild;
-    public boolean doneResolving() { return doneResolving; }
-    public void setDoneResolving() { doneResolving = true; }
     public void setMainClassFromOptions() {
         if(mainClass != null) return;
         if( Options.v().main_class() != null
@@ -1214,21 +1170,6 @@ public class Scene  //extends AbstractHost
         }
     }
     
-    /**
-     * This method returns true when in incremental build mode.
-     * Other classes can query this flag and change the way in which they use the Scene,
-     * depending on the flag's value.
-     */
-    public boolean isIncrementalBuild() {
-    	return incrementalBuild;
-    }
-    
-    public void initiateIncrementalBuild() {
-    	this.incrementalBuild = true;
-    }
 
-    public void incrementalBuildFinished() {
-    	this.incrementalBuild = false;
-    }
 }
 

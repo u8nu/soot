@@ -36,7 +36,6 @@ import soot.util.*;
 import java.util.*;
 import soot.*;
 import soot.jimple.*;
-import soot.baf.*;
 
 public class JExitMonitorStmt extends AbstractStmt 
     implements ExitMonitorStmt
@@ -99,22 +98,6 @@ public class JExitMonitorStmt extends AbstractStmt
         ((StmtSwitch) sw).caseExitMonitorStmt(this);
 
     }    
-
-  public void convertToBaf(JimpleToBafContext context, List<Unit> out)
-  {
-    ((ConvertToBaf)(getOp())).convertToBaf(context, out);
-
-    Unit u;
-    out.add(u = Baf.v().newExitMonitorInst());
-
-    Unit currentUnit = this;
-
-    Iterator it = currentUnit.getTags().iterator();	
-    while(it.hasNext()) {
-	u.addTag((Tag) it.next());
-    }
-
-  }
 
 
     

@@ -29,7 +29,6 @@ package soot.jimple.internal;
 
 import soot.*;
 import soot.jimple.*;
-import soot.baf.*;
 import soot.util.*;
 import java.util.*;
 
@@ -37,7 +36,7 @@ import java.util.*;
 import soot.tagkit.*;
 
 public abstract class AbstractInterfaceInvokeExpr extends AbstractInstanceInvokeExpr 
-                             implements InterfaceInvokeExpr, ConvertToBaf
+                             implements InterfaceInvokeExpr
 {
     protected AbstractInterfaceInvokeExpr(ValueBox baseBox, SootMethodRef methodRef,
                                   ValueBox[] argBoxes)
@@ -143,24 +142,5 @@ public abstract class AbstractInterfaceInvokeExpr extends AbstractInstanceInvoke
         return argCount;
     }
 
-    public void convertToBaf(JimpleToBafContext context, List<Unit> out)
-    {
-        ((ConvertToBaf)getBase()).convertToBaf(context, out);;
-
-       for (ValueBox element : argBoxes) {
-	    ((ConvertToBaf)(element.getValue())).convertToBaf(context, out);
-	}
-       
-       Unit u;
-       out.add(u = Baf.v().newInterfaceInvokeInst(methodRef, argCountOf(methodRef)));
-
-	Unit currentUnit = context.getCurrentUnit();
-
-	Iterator it = currentUnit.getTags().iterator();	
-	while(it.hasNext()) {
-	    u.addTag((Tag) it.next());
-	}
-	
-    }
 }
 

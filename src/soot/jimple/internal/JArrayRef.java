@@ -33,11 +33,10 @@ package soot.jimple.internal;
 import soot.*;
 import soot.tagkit.*;
 import soot.jimple.*;
-import soot.baf.*;
 import soot.util.*;
 import java.util.*;
 
-public class JArrayRef implements ArrayRef, ConvertToBaf
+public class JArrayRef implements ArrayRef
 {
     protected ValueBox baseBox;
     protected ValueBox indexBox;
@@ -162,23 +161,6 @@ public class JArrayRef implements ArrayRef, ConvertToBaf
         ((RefSwitch) sw).caseArrayRef(this);
     }
 
-    public void convertToBaf(JimpleToBafContext context, List<Unit> out)
-    {
-        ((ConvertToBaf)getBase()).convertToBaf(context, out);
-        ((ConvertToBaf)getIndex()).convertToBaf(context, out);
-	
-	Unit currentUnit = context.getCurrentUnit();
-
-	Unit x;
-
-        out.add(x = Baf.v().newArrayReadInst(getType()));
-
-	Iterator it = currentUnit.getTags().iterator();
-	while(it.hasNext()) {
-	    x.addTag((Tag) it.next());
-	}
-
-    }
 }
 
 

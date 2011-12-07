@@ -29,9 +29,6 @@ import soot.tagkit.*;
 import soot.util.*;
 import java.util.*;
 
-import soot.dava.*;
-import soot.dava.toolkits.base.renamer.RemoveFullyQualifiedName;
-
 /**
     Soot representation of a Java method.  Can be declared to belong to a SootClass. 
     Does not contain the actual code, which belongs to a Body.
@@ -285,8 +282,7 @@ public class SootMethod
             throw new RuntimeException(
                 "cannot get active body for phantom class: " + getSignature());
 
-		// ignore empty body exceptions if we are just computing coffi metrics
-        if (!soot.jbco.Main.metrics && !hasActiveBody())
+        if (!hasActiveBody())
             throw new RuntimeException(
                 "no active body present for method " + getSignature());
 
@@ -451,34 +447,6 @@ public class SootMethod
         return Modifier.isSynchronized(this.getModifiers());
     }
 
-    /** Returns the parameters part of the signature in the format in which
-     * it appears in bytecode. */
-    public String getBytecodeParms() {
-        StringBuffer buffer = new StringBuffer();
-        for( Iterator typeIt = getParameterTypes().iterator(); typeIt.hasNext(); ) {
-            final Type type = (Type) typeIt.next();
-            buffer.append(AbstractJasminClass.jasminDescriptorOf(type));
-        }
-        return buffer.toString().intern();
-    }
-
-    /**
-        Returns the signature of this method in the format in which it appears
-        in bytecode (eg. [Ljava/lang/Object instead of java.lang.Object[]).
-     */
-    public String getBytecodeSignature() {
-        String name = getName();
-
-        StringBuffer buffer = new StringBuffer();
-        buffer.append(
-            "<" + Scene.v().quotedNameOf(getDeclaringClass().getName()) + ": ");
-        buffer.append(name);
-        buffer.append(AbstractJasminClass.jasminDescriptorOf(makeRef()));
-        buffer.append(">");
-
-        return buffer.toString().intern();
-    }
-
     /**
         Returns the Soot signature of this method.  Used to refer to methods unambiguously.
      */
@@ -522,7 +490,9 @@ public class SootMethod
         StringBuffer buffer = new StringBuffer();
         Type t = returnType;
 
-        buffer.append(t.toString() + " " + Scene.v().quotedNameOf(name) + "(");
+        buffer.append(t.toString());
+        buffer.append(' ');
+        buffer.append(Scene.v().quotedNameOf(name) + "(");
 
         Iterator typeIt = params.iterator();
 
@@ -540,7 +510,7 @@ public class SootMethod
         }
         buffer.append(")");
 
-        return buffer.toString().intern();
+        return buffer.toString();
     }
 
     private NumberedString subsignature;
@@ -553,141 +523,6 @@ public class SootMethod
         return getSignature();
     }
 
-    /*
-     * TODO: Nomair A. Naeem .... 8th Feb 2006
-     * This is really messy coding
-     * So much for modularization!!
-     * Should some day look into creating the DavaDeclaration from within
-     * DavaBody
-     */
-    public String getDavaDeclaration() {
-        if (getName().equals(staticInitializerName))
-            return "static";
-
-        StringBuffer buffer = new StringBuffer();
-
-        // modifiers
-        StringTokenizer st =
-            new StringTokenizer(Modifier.toString(this.getModifiers()));
-        if (st.hasMoreTokens())
-            buffer.append(st.nextToken());
-
-        while (st.hasMoreTokens())
-            buffer.append(" " + st.nextToken());
-
-        if (buffer.length() != 0)
-            buffer.append(" ");
-
-        // return type + name
-
-        if (getName().equals(constructorName))
-            buffer.append(getDeclaringClass().getShortJavaStyleName());
-        else {
-            Type t = this.getReturnType();
-
-            String tempString = t.toString();    
-            
-            /*
-             * Added code to handle RuntimeExcepotion thrown by getActiveBody
-             */
-            if(hasActiveBody()){
-            	DavaBody body = (DavaBody) getActiveBody();
-            	IterableSet importSet = body.getImportList();
-
-            	if(!importSet.contains(tempString)){
-            		body.addToImportList(tempString);
-            	}
-            	tempString = RemoveFullyQualifiedName.getReducedName(importSet,tempString,t);
-            }
-									
-			buffer.append(tempString + " ");
-
-            buffer.append(Scene.v().quotedNameOf(this.getName()));
-        }
-
-        buffer.append("(");
-
-        // parameters
-        Iterator typeIt = this.getParameterTypes().iterator();
-        int count = 0;
-        while (typeIt.hasNext()) {
-            Type t = (Type) typeIt.next();
-			String tempString = t.toString();
-            
-            /*
-			 *  Nomair A. Naeem 7th Feb 2006
-			 *  It is nice to remove the fully qualified type names
-			 *  of parameters if the package they belong to have been imported
-			 *  javax.swing.ImageIcon should be just ImageIcon if javax.swing is imported
-			 *  If not imported WHY NOT..import it!! 
-			 */
-			if(hasActiveBody()){
-				DavaBody body = (DavaBody) getActiveBody();
-				IterableSet importSet = body.getImportList();
-
-				if(!importSet.contains(tempString)){
-					body.addToImportList(tempString);
-				}
-				tempString = RemoveFullyQualifiedName.getReducedName(importSet,tempString,t);
-			}
-									
-			buffer.append(tempString + " ");
-			
-            buffer.append(" ");
-            if (hasActiveBody()){
-                buffer.append(((DavaBody) getActiveBody()).get_ParamMap().get(new Integer(count++)));
-            }
-            else {
-                if (t == BooleanType.v())
-                    buffer.append("z" + count++);
-                else if (t == ByteType.v())
-                    buffer.append("b" + count++);
-                else if (t == ShortType.v())
-                    buffer.append("s" + count++);
-                else if (t == CharType.v())
-                    buffer.append("c" + count++);
-                else if (t == IntType.v())
-                    buffer.append("i" + count++);
-                else if (t == LongType.v())
-                    buffer.append("l" + count++);
-                else if (t == DoubleType.v())
-                    buffer.append("d" + count++);
-                else if (t == FloatType.v())
-                    buffer.append("f" + count++);
-                else if (t == StmtAddressType.v())
-                    buffer.append("a" + count++);
-                else if (t == ErroneousType.v())
-                    buffer.append("e" + count++);
-                else if (t == NullType.v())
-                    buffer.append("n" + count++);
-                else
-                    buffer.append("r" + count++);
-            }
-
-            if (typeIt.hasNext())
-                buffer.append(", ");
-
-        }
-
-        buffer.append(")");
-
-        // Print exceptions
-        if (exceptions != null) {
-            Iterator<SootClass> exceptionIt = this.getExceptions().iterator();
-
-            if (exceptionIt.hasNext()) {
-                buffer.append(
-                    " throws " + exceptionIt.next().getName());
-
-                while (exceptionIt.hasNext()) {
-                    buffer.append(
-                        ", " + exceptionIt.next().getName());
-                }
-            }
-        }
-
-        return buffer.toString().intern();
-    }
 
     /**
      * Returns the declaration of this method, as used at the top of textual body representations 
@@ -703,17 +538,17 @@ public class SootMethod
             buffer.append(st.nextToken());
 
         while (st.hasMoreTokens())
-            buffer.append(" " + st.nextToken());
+            buffer.append(' ').append(st.nextToken());
 
         if (buffer.length() != 0)
-            buffer.append(" ");
+            buffer.append(' ');
 
         // return type + name
 
-        buffer.append(this.getReturnType() + " ");
+        buffer.append(this.getReturnType()).append(' ');
         buffer.append(Scene.v().quotedNameOf(this.getName()));
 
-        buffer.append("(");
+        buffer.append('(');
 
         // parameters
         Iterator typeIt = this.getParameterTypes().iterator();
@@ -736,16 +571,16 @@ public class SootMethod
 
             if (exceptionIt.hasNext()) {
                 buffer.append(
-                    " throws " + exceptionIt.next().getName());
+                    " throws ").append(exceptionIt.next().getName());
 
                 while (exceptionIt.hasNext()) {
                     buffer.append(
-                        ", " + exceptionIt.next().getName());
+                        ", ").append(exceptionIt.next().getName());
                 }
             }
         }
 
-        return buffer.toString().intern();
+        return buffer.toString();
     }
     public final int getNumber() {
         return number;

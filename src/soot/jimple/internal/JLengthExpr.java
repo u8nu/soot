@@ -34,29 +34,11 @@ import soot.*;
 
 import soot.tagkit.*;
 import soot.jimple.*;
-import soot.baf.*;
 import java.util.*;
 
-public class JLengthExpr extends AbstractLengthExpr implements ConvertToBaf
+public class JLengthExpr extends AbstractLengthExpr 
 {
     public JLengthExpr(Value op) { super(Jimple.v().newImmediateBox(op)); }
-
-
-    public void convertToBaf(JimpleToBafContext context, List<Unit> out)
-    {
-        ((ConvertToBaf)(getOp())).convertToBaf(context, out);
-	
-	Unit u;
-        out.add(u = Baf.v().newArrayLengthInst());
-
-	Unit currentUnit = context.getCurrentUnit();
-
-	Iterator it = currentUnit.getTags().iterator();	
-	while(it.hasNext()) {
-	    u.addTag((Tag) it.next());
-	}
-    }
-  
 
   public Object clone() 
   {

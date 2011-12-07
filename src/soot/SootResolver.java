@@ -26,21 +26,12 @@
 
 
 package soot;
-import soot.javaToJimple.IInitialResolver.Dependencies;
+import soot.IInitialResolver.Dependencies;
 import soot.options.*;
 
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.*;
-
-import polyglot.util.StdErrorQueue;
-
-import soot.JastAddJ.ASTNode;
-import soot.JastAddJ.BytecodeParser;
-import soot.JastAddJ.CompilationUnit;
-import soot.JastAddJ.JavaParser;
-import soot.JastAddJ.JastAddJavaParser;
-import soot.JastAddJ.Program;
 
 /** Loads symbols for SootClasses from either class files or jimple files. */
 public class SootResolver 
@@ -54,36 +45,10 @@ public class SootResolver
     /** SootClasses waiting to be resolved. */
     private final LinkedList/*SootClass*/[] worklist = new LinkedList[4];
 
-	protected Program program;
-
     public SootResolver (Singletons.Global g) {
         worklist[SootClass.HIERARCHY] = new LinkedList();
         worklist[SootClass.SIGNATURES] = new LinkedList();
         worklist[SootClass.BODIES] = new LinkedList();
-        
-        
-        program = new Program();
-	program.state().reset();
-
-        program.initBytecodeReader(new BytecodeParser());
-        program.initJavaParser(
-          new JavaParser() {
-            public CompilationUnit parse(InputStream is, String fileName) throws IOException, beaver.Parser.Exception {
-              return new JastAddJavaParser().parse(is, fileName);
-            }
-          }
-        );
-
-        program.options().initOptions();
-        program.options().addKeyValueOption("-classpath");
-        program.options().setValueForOption(Scene.v().getSootClassPath(), "-classpath");
-	if(Options.v().src_prec() == Options.src_prec_java)
-        	program.setSrcPrec(Program.SRC_PREC_JAVA);
-        else if(Options.v().src_prec() == Options.src_prec_class)
-        	program.setSrcPrec(Program.SRC_PREC_CLASS);
-        else if(Options.v().src_prec() == Options.src_prec_only_class)
-        	program.setSrcPrec(Program.SRC_PREC_CLASS);
-        program.initPaths();
     }
 
     public static SootResolver v() { return G.v().soot_SootResolver();}
@@ -125,6 +90,12 @@ public class SootResolver
         return resolvedClass;
     }
 
+    public SootClass resolveClass(SootClass resolvedClass, int desiredLevel) {
+        addToResolveWorklist(resolvedClass, desiredLevel);
+        processResolveWorklist();
+        return resolvedClass;
+    }
+    
     /** Resolve all classes on toResolveWorklist. */
     private void processResolveWorklist() {
         for( int i = SootClass.BODIES; i >= SootClass.HIERARCHY; i-- ) {
@@ -304,9 +275,6 @@ public class SootResolver
         processResolveWorklist();
     }
 
-	public Program getProgram() {
-		return program;
-	}
 }
 
 

@@ -18,7 +18,6 @@
  */
 
 package soot;
-import soot.JavaClassProvider.JarException;
 import soot.options.*;
 import java.util.*;
 import java.util.zip.*;
@@ -42,32 +41,21 @@ public class SourceLocator
         if( classProviders == null ) {
             setupClassProviders();
         }
-        JarException ex = null;
         for (ClassProvider cp : classProviders) {
-            try {
-	        	ClassSource ret = cp.find(className);
-	            if( ret != null ) return ret;
-            } catch(JarException e) {
-            	ex = e;
-            }
+        	ClassSource ret = cp.find(className);
+            if( ret != null ) return ret;
         }
-        if(ex!=null) throw ex;
         for(final ClassLoader cl: additionalClassLoaders) {
-            try {
-            	ClassSource ret = new ClassProvider() {
-					
-					public ClassSource find(String className) {
-				        String fileName = className.replace('.', '/') + ".class";
-						return new CoffiClassSource(className, cl.getResourceAsStream(fileName));
-					}
+        	ClassSource ret = new ClassProvider() {
+				
+				public ClassSource find(String className) {
+			        String fileName = className.replace('.', '/') + ".class";
+					return new CoffiClassSource(className, cl.getResourceAsStream(fileName));
+				}
 
-            	}.find(className);
-	            if( ret != null ) return ret;
-            } catch(JarException e) {
-            	ex = e;
-            }
+        	}.find(className);
+            if( ret != null ) return ret;
         }
-        if(ex!=null) throw ex;
         return null;
     }
     
@@ -77,28 +65,7 @@ public class SourceLocator
 
     private void setupClassProviders() {
         classProviders = new LinkedList<ClassProvider>();
-        switch( Options.v().src_prec() ) {
-            case Options.src_prec_class:
-                classProviders.add(new CoffiClassProvider());
-                classProviders.add(new JimpleClassProvider());
-                classProviders.add(new JavaClassProvider());
-                break;
-            case Options.src_prec_only_class:
-                classProviders.add(new CoffiClassProvider());
-                break;
-            case Options.src_prec_java:
-                classProviders.add(new JavaClassProvider());
-                classProviders.add(new CoffiClassProvider());
-                classProviders.add(new JimpleClassProvider());
-                break;
-            case Options.src_prec_jimple:
-                classProviders.add(new JimpleClassProvider());
-                classProviders.add(new CoffiClassProvider());
-                classProviders.add(new JavaClassProvider());
-                break;
-            default:
-                throw new RuntimeException("Other source precedences are not currently supported.");
-        }
+        classProviders.add(new CoffiClassProvider());
     }
 
     private List<ClassProvider> classProviders;

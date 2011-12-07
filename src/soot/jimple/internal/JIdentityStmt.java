@@ -33,7 +33,6 @@ package soot.jimple.internal;
 import soot.tagkit.*;
 import soot.*;
 import soot.jimple.*;
-import soot.baf.*;
 import soot.util.*;
 import java.util.*;
 
@@ -83,38 +82,6 @@ public class JIdentityStmt extends AbstractDefinitionStmt
     {
         ((StmtSwitch) sw).caseIdentityStmt(this);
     }    
-    
-    public void convertToBaf(JimpleToBafContext context, List<Unit> out)
-    {
-        Value currentRhs = getRightOp();
-        Value newRhs;
-        
-        if(currentRhs instanceof ThisRef)
-            newRhs = Baf.v().newThisRef((RefType)((ThisRef) currentRhs).getType());
-        else if(currentRhs instanceof ParameterRef)
-            newRhs = Baf.v().newParameterRef(((ParameterRef)currentRhs).getType(), ((ParameterRef) currentRhs).getIndex());
-        else if(currentRhs instanceof CaughtExceptionRef)
-            { 
-		Unit u = Baf.v().newStoreInst(RefType.v(), 
-                       context.getBafLocalOfJimpleLocal((Local) getLeftOp()));
-                out.add(u);
-
-		Iterator it = getTags().iterator();
-		while(it.hasNext()) {
-		    u.addTag((Tag) it.next());
-		}
-		return; 
-	    }
-        else
-            throw new RuntimeException("Don't know how to convert unknown rhs");
-	Unit u = Baf.v().newIdentityInst(context.getBafLocalOfJimpleLocal
-                                         ((Local) getLeftOp()), newRhs);
-        out.add(u);
-	Iterator it = getTags().iterator();
-	while(it.hasNext()) {
-	    u.addTag((Tag) it.next());
-	}
-    }
 
 
 }

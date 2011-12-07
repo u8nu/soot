@@ -35,7 +35,6 @@ import soot.*;
 import soot.jimple.*;
 import soot.util.*;
 import java.util.*;
-import soot.baf.*;
 
 public class JInvokeStmt extends AbstractStmt implements InvokeStmt
 {
@@ -100,25 +99,6 @@ public class JInvokeStmt extends AbstractStmt implements InvokeStmt
     {
         ((StmtSwitch) sw).caseInvokeStmt(this);
     }
-   
-    public void convertToBaf(JimpleToBafContext context, List<Unit> out)
-    {
-        InvokeExpr ie = getInvokeExpr();
-        
-	context.setCurrentUnit(this);
-	
-        ((ConvertToBaf) ie).convertToBaf(context, out);
-        if(!ie.getMethodRef().returnType().equals(VoidType.v()))
-        {
-            Unit u = Baf.v().newPopInst(ie.getMethodRef().returnType());
-            out.add(u);
-
-	    Iterator it = getTags().iterator();
-	    while(it.hasNext()) {
-		u.addTag((Tag) it.next());
-	    }
-	}
-    }    
 
     public boolean fallsThrough() {return true;}
     public boolean branches() {return false;}

@@ -33,7 +33,6 @@ package soot.jimple.internal;
 import soot.tagkit.*;
 import soot.*;
 import soot.jimple.*;
-import soot.baf.*;
 import soot.util.*;
 import java.util.*;
 
@@ -286,35 +285,6 @@ public class JLookupSwitchStmt extends AbstractStmt
       ((StmtSwitch) sw).caseLookupSwitchStmt(this);
     }
     
-    public void convertToBaf(JimpleToBafContext context, List<Unit> out)
-    {
-        ArrayList targetPlaceholders = new ArrayList();
-
-        ((ConvertToBaf)(getKey())).convertToBaf(context, out);
-
-        for (int i = 0; i < targetBoxes.length; i++)
-        {
-            targetPlaceholders.add(Baf.v().newPlaceholderInst
-                                   (getTarget(i)));
-        }
-	
-	Unit u;
-        out.add(u = Baf.v().newLookupSwitchInst
-                (Baf.v().newPlaceholderInst(getDefaultTarget()),
-                 getLookupValues(), targetPlaceholders));
-
-	Unit currentUnit = this;
-
-	Iterator it = currentUnit.getTags().iterator();	
-	while(it.hasNext()) {
-	    u.addTag((Tag) it.next());
-	}
-	
-
-    }
-
-
-
 
     
 

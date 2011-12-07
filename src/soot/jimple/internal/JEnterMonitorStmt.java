@@ -34,7 +34,6 @@ package soot.jimple.internal;
 import soot.tagkit.*;
 import soot.*;
 import soot.jimple.*;
-import soot.baf.*;
 import soot.util.*;
 import java.util.*;
 
@@ -97,21 +96,6 @@ public class JEnterMonitorStmt extends AbstractStmt
     public void apply(Switch sw)
     {
         ((StmtSwitch) sw).caseEnterMonitorStmt(this);
-
-    }
-    
-    public void convertToBaf(JimpleToBafContext context, List<Unit> out)
-    {
-        ((ConvertToBaf)(getOp())).convertToBaf(context, out);
-	Unit u;
-        out.add(u = Baf.v().newEnterMonitorInst());
-
-	Unit currentUnit = this;
-
-	Iterator it = currentUnit.getTags().iterator();	
-	while(it.hasNext()) {
-	    u.addTag((Tag) it.next());
-	}
 
     }
   

@@ -33,32 +33,14 @@ package soot.jimple.internal;
 import soot.tagkit.*;
 import soot.*;
 import soot.jimple.*;
-import soot.baf.*;
 import java.util.*;
 
 public class JInstanceOfExpr extends AbstractInstanceOfExpr
-  implements ConvertToBaf
 {
     public JInstanceOfExpr(Value op, Type checkType)
     {
         super(Jimple.v().newImmediateBox(op), checkType);
     }
-
-
-    public void convertToBaf(JimpleToBafContext context, List<Unit> out)
-    {
-        ((ConvertToBaf)(getOp())).convertToBaf(context, out);
-	Unit u;
-        out.add(u = Baf.v().newInstanceOfInst(getCheckType()));
-
-	Unit currentUnit = context.getCurrentUnit();
-
-	Iterator it = currentUnit.getTags().iterator();	
-	while(it.hasNext()) {
-	    u.addTag((Tag) it.next());
-	}
-    }
-    
 
   
     public Object clone() 

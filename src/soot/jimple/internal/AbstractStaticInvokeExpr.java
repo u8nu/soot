@@ -30,12 +30,11 @@ package soot.jimple.internal;
 import soot.*;
 import soot.tagkit.*;
 import soot.jimple.*;
-import soot.baf.*;
 import soot.util.*;
 import java.util.*;
 
 
-public abstract class AbstractStaticInvokeExpr extends AbstractInvokeExpr implements StaticInvokeExpr, ConvertToBaf
+public abstract class AbstractStaticInvokeExpr extends AbstractInvokeExpr implements StaticInvokeExpr
 {
     AbstractStaticInvokeExpr(SootMethodRef methodRef, List args)
     {
@@ -129,20 +128,4 @@ public abstract class AbstractStaticInvokeExpr extends AbstractInvokeExpr implem
         ((ExprSwitch) sw).caseStaticInvokeExpr(this);
     }
 
-    public void convertToBaf(JimpleToBafContext context, List<Unit> out)
-    {
-       for (ValueBox element : argBoxes) {
-	    ((ConvertToBaf)(element.getValue())).convertToBaf(context, out);
-	}
-       
-       Unit u;
-       out.add(u = Baf.v().newStaticInvokeInst(methodRef));
-
-       Unit currentUnit = context.getCurrentUnit();
-
-	Iterator it = currentUnit.getTags().iterator();	
-	while(it.hasNext()) {
-	    u.addTag((Tag) it.next());
-	}
-    }
 }

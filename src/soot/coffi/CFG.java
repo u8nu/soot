@@ -99,9 +99,6 @@ public class CFG {
 	else
 	    firstInstruction = null;
 
-	// calculate complexity metrics
-    if (soot.jbco.Main.metrics) complexity();
-    
     /*	
 	if (m.code_attr != null)
 	{

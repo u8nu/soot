@@ -29,13 +29,11 @@ package soot;
 
 import soot.tagkit.*;
 import soot.util.*;
-import soot.jimple.paddle.PaddleField;
-import soot.jimple.spark.pag.SparkField;
 
 /**
     Soot representation of a Java field.  Can be declared to belong to a SootClass.
 */
-public class SootField extends AbstractHost implements ClassMember, SparkField, Numberable, PaddleField
+public class SootField extends AbstractHost implements ClassMember, Numberable
 {
     String name;
     Type type;
@@ -80,18 +78,18 @@ public class SootField extends AbstractHost implements ClassMember, SparkField, 
     {
         StringBuffer buffer = new StringBuffer();
 
-        buffer.append("<" + Scene.v().quotedNameOf(cl.getName()) + ": ");
-        buffer.append(type + " " + Scene.v().quotedNameOf(name) + ">");
+        buffer.append('<').append(Scene.v().quotedNameOf(cl.getName())).append(": ");
+        buffer.append(type).append(' ').append(Scene.v().quotedNameOf(name)).append('>');
 
-        return buffer.toString().intern();
+        return buffer.toString();
 
     }
   
     public String getSubSignature()
     {
         StringBuffer buffer = new StringBuffer();
-        buffer.append(getType() + " " + Scene.v().quotedNameOf(getName()));
-        return buffer.toString().intern();
+        buffer.append(getType()).append(' ').append(Scene.v().quotedNameOf(getName()));
+        return buffer.toString();
     }
     
     public SootClass getDeclaringClass() 

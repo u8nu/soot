@@ -34,7 +34,6 @@ import soot.tagkit.*;
 import soot.*;
 import soot.jimple.*;
 import soot.util.*;
-import soot.baf.*;
 import java.util.*;
 
 public class JThrowStmt extends AbstractStmt implements ThrowStmt
@@ -96,24 +95,6 @@ public class JThrowStmt extends AbstractStmt implements ThrowStmt
     {
         ((StmtSwitch) sw).caseThrowStmt(this);
     }    
-
-
-    public void convertToBaf(JimpleToBafContext context, List<Unit> out)
-    {
-        ((ConvertToBaf)getOp()).convertToBaf(context, out);
-
-	Unit u;
-        out.add(u = Baf.v().newThrowInst());
-
-	Unit currentUnit = this;
-
-	Iterator it = currentUnit.getTags().iterator();	
-	while(it.hasNext()) {
-	    u.addTag((Tag) it.next());
-	}
-	
-    }
-
 
     
     public boolean fallsThrough(){return false;}

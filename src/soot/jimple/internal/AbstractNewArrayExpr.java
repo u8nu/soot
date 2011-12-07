@@ -29,11 +29,10 @@ package soot.jimple.internal;
 import soot.tagkit.*;
 import soot.*;
 import soot.jimple.*;
-import soot.baf.*;
 import soot.util.*;
 import java.util.*;
 
-public abstract class AbstractNewArrayExpr implements NewArrayExpr, ConvertToBaf
+public abstract class AbstractNewArrayExpr implements NewArrayExpr
 {
     Type baseType;
     ValueBox sizeBox;
@@ -137,20 +136,4 @@ public abstract class AbstractNewArrayExpr implements NewArrayExpr, ConvertToBaf
         ((ExprSwitch) sw).caseNewArrayExpr(this);
     }
 
-    public void convertToBaf(JimpleToBafContext context, List<Unit> out)
-    {
-       ((ConvertToBaf)(getSize())).convertToBaf(context, out);
-       
-
-       Unit u;
-       out.add(u = Baf.v().newNewArrayInst(getBaseType()));
-	
-	Unit currentUnit = context.getCurrentUnit();
-
-	Iterator it = currentUnit.getTags().iterator();	
-	while(it.hasNext()) {
-	    u.addTag((Tag) it.next());
-	}
-	
-    }
 }

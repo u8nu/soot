@@ -32,8 +32,6 @@ public class EnhancedBlockGraph extends BlockGraph
 
     public  EnhancedBlockGraph(EnhancedUnitGraph unitGraph) {
         super(unitGraph);
-
-        soot.util.PhaseDumper.v().dumpGraph(this, mBody);
     }
 }
 

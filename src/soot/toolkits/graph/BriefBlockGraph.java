@@ -64,8 +64,6 @@ public class BriefBlockGraph extends BlockGraph
      */
     public  BriefBlockGraph(BriefUnitGraph unitGraph) {
         super(unitGraph);
-
-	soot.util.PhaseDumper.v().dumpGraph(this, mBody);
     }
 }
 

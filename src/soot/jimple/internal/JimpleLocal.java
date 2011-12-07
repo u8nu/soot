@@ -29,11 +29,10 @@ package soot.jimple.internal;
 import soot.tagkit.*;
 import soot.*;
 import soot.jimple.*;
-import soot.baf.*;
 import soot.util.*;
 import java.util.*;
 
-public class JimpleLocal implements Local, ConvertToBaf
+public class JimpleLocal implements Local
 {
     String name;
     Type type;
@@ -132,15 +131,6 @@ public class JimpleLocal implements Local, ConvertToBaf
         ((JimpleValueSwitch) sw).caseLocal(this);
     }
 
-    public void convertToBaf(JimpleToBafContext context, List<Unit> out)
-    {
-	Unit u = Baf.v().newLoadInst(getType(),context.getBafLocalOfJimpleLocal(this));
-        out.add(u);
-	Iterator it = context.getCurrentUnit().getTags().iterator();
-	while(it.hasNext()) {
-	    u.addTag((Tag) it.next());
-	}
-    }
     public final int getNumber() { return number; }
     public final void setNumber( int number ) { this.number = number; }
 
