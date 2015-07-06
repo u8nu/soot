@@ -1,2 +1,8 @@
+*~
+*.o
+*.iml
+a.out
+*.class
+.*
 /target/
 /bin/
