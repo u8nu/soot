@@ -156,6 +156,7 @@ public class UseChecker extends AbstractStmtSwitch
 	public void caseAssignStmt(AssignStmt stmt)
 	{
 		Value lhs = stmt.getLeftOp();
+		Value rhs = stmt.getRightOp();
 		Type tlhs = null;
 		
 		
@@ -164,24 +165,34 @@ public class UseChecker extends AbstractStmtSwitch
 			tlhs = this.tg.get((Local)lhs);
 		else if ( lhs instanceof ArrayRef )
 		{
-			Local base = (Local)((ArrayRef)lhs).getBase();
+			ArrayRef aref = (ArrayRef) lhs;
+			Local base = (Local) aref.getBase();
+
+			// Try to force Type integrity. The left side must agree on the
+			// element type of the right side array reference.
 			ArrayType at;
-			//try to force Type integrity
 			if (this.tg.get(base) instanceof ArrayType)
 				at = (ArrayType)this.tg.get(base);
 			else
-				at = (ArrayType)this.tg.get(base).makeArrayType();
+				at = this.tg.get(base).makeArrayType();
 			tlhs = ((ArrayType)at).getElementType();
-			this.handleArrayRef((ArrayRef)lhs, stmt);
+
+			this.handleArrayRef(aref, stmt);
+
+			aref.setBase((Local) this.uv.visit(aref.getBase(), at, stmt));
+			stmt.setRightOp(this.uv.visit(rhs, tlhs, stmt));
+			stmt.setLeftOp(this.uv.visit(lhs, tlhs, stmt));
 		}
 		else if ( lhs instanceof FieldRef )
 		{
-			tlhs = ((FieldRef)lhs).getField().getType();
+			tlhs = ((FieldRef)lhs).getFieldRef().type();
 			if ( lhs instanceof InstanceFieldRef )
 				this.handleInstanceFieldRef((InstanceFieldRef)lhs, stmt);
 		}
 			
-		Value rhs = stmt.getRightOp();
+		// They may have been changed above
+                lhs = stmt.getLeftOp();
+                rhs = stmt.getRightOp();
 		
 		if ( rhs instanceof Local )
 			stmt.setRightOp(this.uv.visit(rhs, tlhs, stmt));
