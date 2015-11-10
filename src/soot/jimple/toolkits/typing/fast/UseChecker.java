@@ -173,6 +173,12 @@ public class UseChecker extends AbstractStmtSwitch
 			ArrayType at;
 			if (this.tg.get(base) instanceof ArrayType)
 				at = (ArrayType)this.tg.get(base);
+			// RoboVM note: Added this else-if to fix robovm/robovm#1181
+			else if (rhs.getType() instanceof PrimType)
+				at = rhs.getType().makeArrayType();
+			// RoboVM note: Added this else-if to fix robovm/robovm#1181
+			else if (rhs instanceof Local && this.tg.get((Local) rhs) instanceof PrimType)
+				at = this.tg.get((Local) rhs).makeArrayType();
 			else
 				at = this.tg.get(base).makeArrayType();
 			tlhs = ((ArrayType)at).getElementType();
