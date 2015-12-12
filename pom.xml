@@ -9,32 +9,32 @@
     <version>7</version>
   </parent>
 
-  <groupId>org.robovm</groupId>
-  <version>2.5.0-2</version>
-  <artifactId>robovm-soot</artifactId>
+  <groupId>nu.u8</groupId>
+  <version>2.5.0-p.1</version>
+  <artifactId>soot</artifactId>
   <name>Soot</name>
   <packaging>jar</packaging>
-  <url>http://www.robovm.com</url>
+  <url>https://github.com/u8nu</url>
   <description>
-    RoboVM fork of Soot - A Java optimization framework
+    U8NU fork of RoboVM fork of Soot - A Java optimization framework
   </description>
   <inceptionYear>2012</inceptionYear>
 
   <organization>
-    <name>RoboVM AB</name>
-    <url>http://www.robovm.com</url>
+    <name>U8NU Study Group</name>
+    <url>https://github.com/u8nu</url>
   </organization>
 
   <scm>
-    <url>https://github.com/robovm/soot</url>
-    <connection>scm:git:git://github.com/robovm/soot.git</connection>
-    <developerConnection>scm:git:git@github.com:robovm/soot.git</developerConnection>
-    <tag>robovm-soot-2.5.0-2</tag>
+    <url>https://github.com/u8nu/soot</url>
+    <connection>scm:git:git://github.com/u8nu/soot.git</connection>
+    <developerConnection>scm:git:git@github.com:u8nu/soot.git</developerConnection>
+    <tag>u8nu/2.5.0-p.1</tag>
   </scm>
 
   <issueManagement>
     <system>GitHub</system>
-    <url>https://github.com/robovm/soot/issues</url>
+    <url>https://github.com/u8nu/soot/issues</url>
   </issueManagement>
 
   <dependencies>
@@ -186,6 +186,12 @@
       <url>http://repository.codehaus.org/</url>
     </pluginRepository>
   </pluginRepositories>
+  <distributionManagement>
+    <repository>
+      <id>bintray</id>
+      <url>https://api.bintray.com/maven/u8nu/maven/soot/;publish=1</url>
+    </repository>
+  </distributionManagement>
 
 </project>
 
